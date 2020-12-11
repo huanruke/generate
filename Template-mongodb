@@ -1,0 +1,106 @@
+##导入宏定义
+$!define
+
+##设置表后缀（宏定义）
+#setTableSuffix("Bean")
+
+##保存文件（宏定义）
+#save("/entity", "Bean.java")
+
+##包路径（宏定义）
+#setPackageSuffix("entity")
+
+##自动导入包（全局变量）
+$!autoImport
+import lombok.Data;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
+
+##表注释（宏定义）
+#tableComment("表实体类")
+@Data
+@Document(collection = "$!{tableInfo.obj.name}")
+public class $!{tableName} extends BaseBean {
+#foreach($column in $tableInfo.fullColumn)
+
+    #if(${column.comment})/** ${column.comment} */
+#end
+@Field("$!{column.obj.name}")
+    private $!{tool.getClsNameByFullName($column.type)} $!{column.name};
+#end
+
+}
+
+
+##导入宏定义
+$!define
+
+##设置表后缀（宏定义）
+#setTableSuffix("Dao")
+
+##保存文件（宏定义）
+#save("/dao", "Dao.java")
+
+##包路径（宏定义）
+#setPackageSuffix("dao")
+
+import org.springframework.data.mongodb.repository.MongoRepository;
+import $!{tableInfo.savePackageName}.entity.$!{tableInfo.name}Bean;
+
+##表注释（宏定义）
+#tableComment("表Dao")
+public interface $!{tableName} extends BaseDao<$!{tableInfo.name}Bean> {
+
+}
+
+
+##导入宏定义
+$!define
+
+##设置表后缀（宏定义）
+#setTableSuffix("Service")
+
+##保存文件（宏定义）
+#save2("/service", "Service.java")
+
+##包路径（宏定义）
+#setPackageSuffix("service")
+
+import $!{tableInfo.savePackageName}.service.IBaseService;
+import $!{tableInfo.savePackageName}.entity.$!{tableInfo.name}Bean;
+
+##表注释（宏定义）
+#tableComment("表业务接口")
+public interface I$!{tableName} extends IBaseService<$!{tableInfo.name}Bean> {
+
+}
+
+
+##导入宏定义
+$!define
+
+##设置表后缀（宏定义）
+#setTableSuffix("ServiceImpl")
+
+##保存文件（宏定义）
+#save("/service/impl", "ServiceImpl.java")
+
+##包路径（宏定义）
+#setPackageSuffix("service.impl")
+
+import $!{tableInfo.savePackageName}.dao.$!{tableInfo.name}Dao;
+import $!{tableInfo.savePackageName}.entity.$!{tableInfo.name}Bean;
+import $!{tableInfo.savePackageName}.service.AbstractBaseService;
+import $!{tableInfo.savePackageName}.service.I$!{tableInfo.name}Service;
+import org.springframework.stereotype.Service;
+
+##表注释（宏定义）
+#tableComment("表业务实现类")
+@Service
+public class $!{tableName}
+        extends AbstractBaseService<$!{tableInfo.name}Bean, $!{tableInfo.name}Dao>
+        implements I$!{tableInfo.name}Service {
+
+}
+
+

@@ -1,0 +1,215 @@
+##导入宏定义
+$!define
+
+##设置表后缀（宏定义）
+#setTableSuffix("Bean")
+
+##保存文件（宏定义）
+#save("/entity", "Bean.java")
+
+##包路径（宏定义）
+#setPackageSuffix("entity")
+
+##自动导入包（全局变量）
+$!autoImport
+import lombok.Data;
+
+##表注释（宏定义）
+#tableComment("表实体类")
+@Data
+public class $!{tableName} extends BaseBean {
+
+    private static final long serialVersionUID = $!tool.serial();
+#foreach($column in $tableInfo.fullColumn)
+
+    #if(${column.comment})/** ${column.comment} */
+#end
+private $!{tool.getClsNameByFullName($column.type)} $!{column.name};
+#end
+
+}
+
+
+##导入宏定义
+$!define
+
+##设置表后缀（宏定义）
+#setTableSuffix("Dao")
+
+##保存文件（宏定义）
+#save("/dao", "Dao.java")
+
+##包路径（宏定义）
+#setPackageSuffix("dao")
+
+import org.apache.ibatis.annotations.Mapper;
+import $!{tableInfo.savePackageName}.entity.$!{tableInfo.name}Bean;
+
+##表注释（宏定义）
+#tableComment("表Dao")
+@Mapper
+public interface $!{tableName} extends BaseDao<$!{tableInfo.name}Bean> {
+
+}
+
+
+##导入宏定义
+$!define
+
+##设置表后缀（宏定义）
+#setTableSuffix("Service")
+
+##保存文件（宏定义）
+#save2("/service", "Service.java")
+
+##包路径（宏定义）
+#setPackageSuffix("service")
+
+import $!{tableInfo.savePackageName}.service.IBaseService;
+import $!{tableInfo.savePackageName}.entity.$!{tableInfo.name}Bean;
+
+##表注释（宏定义）
+#tableComment("表业务接口")
+public interface I$!{tableName} extends IBaseService<$!{tableInfo.name}Bean> {
+
+}
+
+
+##导入宏定义
+$!define
+
+##设置表后缀（宏定义）
+#setTableSuffix("ServiceImpl")
+
+##保存文件（宏定义）
+#save("/service/impl", "ServiceImpl.java")
+
+##包路径（宏定义）
+#setPackageSuffix("service.impl")
+
+import $!{tableInfo.savePackageName}.dao.$!{tableInfo.name}Dao;
+import $!{tableInfo.savePackageName}.entity.$!{tableInfo.name}Bean;
+import $!{tableInfo.savePackageName}.service.AbstractBaseService;
+import $!{tableInfo.savePackageName}.service.I$!{tableInfo.name}Service;
+import org.springframework.stereotype.Service;
+
+##表注释（宏定义）
+#tableComment("表业务实现类")
+@Service
+public class $!{tableName}
+        extends AbstractBaseService<$!{tableInfo.name}Bean, $!{tableInfo.name}Dao>
+        implements I$!{tableInfo.name}Service {
+
+}
+
+
+##引入mybatis支持
+$!mybatisSupport
+
+##设置保存名称与保存位置
+$!callback.setFileName($tool.append($!{tableInfo.name}, "Mapper.xml"))
+$!callback.setSavePath($tool.append($modulePath, "/src/main/resources/mapper"))
+
+##拿到主键
+#if(!$tableInfo.pkColumn.isEmpty())
+    #set($pk = $tableInfo.pkColumn.get(0))
+#end
+
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="$!{tableInfo.savePackageName}.dao.$!{tableInfo.name}Dao">
+
+    <resultMap type="$!{tableInfo.savePackageName}.entity.$!{tableInfo.name}Bean" id="$!{tableInfo.name}Map">
+#foreach($column in $tableInfo.fullColumn)
+        <result property="$!column.name" column="$!column.obj.name" jdbcType="$!column.ext.jdbcType"/>
+#end
+    </resultMap>
+
+    <!--新增-->
+    <insert id="insert" keyProperty="$!pk.name" useGeneratedKeys="true">
+        insert into $!{tableInfo.obj.parent.name}.$!{tableInfo.obj.name}(#foreach($column in $tableInfo.otherColumn)$!column.obj.name#if($velocityHasNext), #end#end)
+        values (#foreach($column in $tableInfo.otherColumn)#{$!{column.name}}#if($velocityHasNext), #end#end)
+    </insert>
+
+    <!--批量新增-->
+    <insert id="insertBatch" keyProperty="$!pk.name" useGeneratedKeys="true">
+        insert into $!{tableInfo.obj.parent.name}.$!{tableInfo.obj.name}(#foreach($column in $tableInfo.otherColumn)$!column.obj.name#if($velocityHasNext), #end#end)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+        (#foreach($column in $tableInfo.otherColumn)#{entity.$!{column.name}}#if($velocityHasNext), #end#end)
+        </foreach>
+    </insert>
+
+    <!--修改-->
+    <update id="update">
+        update $!{tableInfo.obj.parent.name}.$!{tableInfo.obj.name}
+        <set>
+#foreach($column in $tableInfo.otherColumn)
+            <if test="$!column.name != null#if($column.type.equals("java.lang.String")) and $!column.name != ''#end">
+                $!column.obj.name = #{$!column.name},
+            </if>
+#end
+        </set>
+        where $!pk.obj.name = #{$!pk.name}
+    </update>
+
+    <!--删除-->
+    <delete id="deleteById">
+        delete from $!{tableInfo.obj.parent.name}.$!{tableInfo.obj.name} where $!pk.obj.name = #{$!pk.name}
+    </delete>
+
+    <!--查询-->
+    <select id="queryById" resultMap="$!{tableInfo.name}Map">
+        select
+          #allSqlColumn()
+
+        from $!{tableInfo.obj.parent.name}.$!tableInfo.obj.name
+        where $!pk.obj.name = #{$!pk.name}
+    </select>
+
+    <!--条件查询-->
+    <select id="queryAll" resultMap="$!{tableInfo.name}Map">
+        select
+          #allSqlColumn()
+
+        from $!{tableInfo.obj.parent.name}.$!tableInfo.obj.name
+        <where>
+#foreach($column in $tableInfo.fullColumn)
+            <if test="$!column.name != null#if($column.type.equals("java.lang.String")) and $!column.name != ''#end">
+                and $!column.obj.name = #{$!column.name}
+            </if>
+#end
+        </where>
+    </select>
+
+    <!--条件查询数量-->
+    <select id="queryCount" resultType="java.lang.Long">
+        select count(1)
+        from $!{tableInfo.obj.parent.name}.$!tableInfo.obj.name
+        <where>
+#foreach($column in $tableInfo.fullColumn)
+            <if test="$!column.name != null#if($column.type.equals("java.lang.String")) and $!column.name != ''#end">
+                and $!column.obj.name = #{$!column.name}
+            </if>
+#end
+        </where>
+    </select>
+
+    <!--条件分页查询-->
+    <select id="queryPage" resultMap="$!{tableInfo.name}Map">
+        select
+          #allSqlColumn()
+
+        from $!{tableInfo.obj.parent.name}.$!tableInfo.obj.name
+        <where>
+#foreach($column in $tableInfo.fullColumn)
+            <if test="entity.$!column.name != null#if($column.type.equals("java.lang.String")) and entity.$!column.name != ''#end">
+                and $!column.obj.name = #{entity.$!column.name}
+            </if>
+#end
+        </where>
+        limit #{offset}, #{limit}
+    </select>
+
+</mapper>
+

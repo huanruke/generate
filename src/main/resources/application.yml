@@ -1,0 +1,37 @@
+spring:
+  application:
+    name: generate
+
+  # mysql配置
+  datasource:
+    url: jdbc:mysql://10.10.10.120:3306/smart?useSSL=true&useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&autoReconnect=true&failOverReadOnly=false&zeroDateTimeBehavior=convertToNull
+    username: root
+    password: 123.com
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    type: com.alibaba.druid.pool.DruidDataSource
+    druid:
+      initialSize: 5
+      minIdle: 5
+      maxActive: 10
+      maxWait: 10000
+      timeBetweenEvictionRunsMillis: 30000
+      minEvictableIdleTimeMillis: 300000
+      validationQuery: SELECT 1 FROM DUAL
+      testWhileIdle: true
+
+  # mongodb配置
+  data:
+    mongodb:
+      host: 10.10.10.109
+      port: 27017
+      database: alien-pat
+      auto-index-creation: false
+      option:
+        min-connection-per-host: 5  #最小连接数
+        max-connection-per-host: 10 #最大连接数
+        threads-allowed-to-block-for-connection-multiplier: 5
+
+# mybatis配置
+mybatis:
+  mapper-locations: classpath:/mapper/*.xml
+  type-aliases-package: cn.digitlink.generate.entity

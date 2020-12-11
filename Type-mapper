@@ -1,0 +1,25 @@
+### mongo
+ObjectId(\(\d+\))?	java.lang.String
+Date(\(\d+\))?	java.util.Date
+String(\(\d+\))?	java.lang.String
+Double(\(\d+,\d+\))?	java.lang.Double
+Integer	java.lang.Integer
+Long(\(\d+\))?	java.lang.Long
+Boolean	java.lang.Boolean
+
+
+### msyql
+varchar(\(\d+\))?	java.lang.String
+char(\(\d+\))?	java.lang.String
+text	java.lang.String
+decimal(\(\d+\))?	java.lang.Integer
+decimal(\(\d+,\d+\))?	java.lang.Double
+int(\(\d+\))?	java.lang.Integer
+bigint(\(\d+\))?	java.lang.Long
+datetime	java.util.Date
+timestamp	java.util.Date
+boolean	java.lang.Boolean
+tinyint(\(\d+\))?	java.lang.Integer
+tinyint(\(\d+\))? unsigned	java.lang.Integer
+int(\(\d+\))? unsigned	java.lang.Integer
+bigint(\(\d+\))? unsigned	java.lang.Integer
